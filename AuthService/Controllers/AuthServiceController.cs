@@ -6,10 +6,11 @@ namespace AuthService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AuthServiceController : ControllerBase
     {
-        [HttpGet]
-        [Authorize]
+        [HttpPost]
+        
         public string GetToken()
         {
             return DateTime.Now.ToString();
