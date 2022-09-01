@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
@@ -14,11 +15,25 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["jwt:Issuer"],
+            ValidAudience = builder.Configuration["jwt:Aud1"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwt:key"]))
+        };
+    });
+   
+
 builder.Services.AddSingleton<ITokenService>(new TokenService());
 
 await using var app = builder.Build();
-
-app.UseHttpsRedirection();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -36,8 +51,7 @@ app.MapPost("/validate", [AllowAnonymous] (UserValidationRequestModel request, H
                                                 builder.Configuration["jwt:issuer"],
                                                  new[]
                                                 {
-                                                 builder.Configuration["jwt:Aud1"],
-                                                 builder.Configuration["jwt:Aud2"]
+                                                 builder.Configuration["jwt:Aud"]
                                                  },
                                                  request.UserName);
 
